@@ -31,7 +31,7 @@ async function startFetching() {
                 .catch(error => console.error('Error in getHighestPriceToday:', error));
 
         if (isCurrentPriceHigh(currentPrice, todayHighestPrice, pricePrecision)) {
-          sendMail(currentPrice);
+          sendMail(currentPrice, 'highest');
           console.log(`Today the highest price update: $${todayHighestPrice} -> $${currentPrice}`);
 
           insertPrice(currentPrice)
@@ -50,14 +50,14 @@ async function startFetching() {
                 .catch(error => console.error('Error in getLowestPriceToday:', error));
 
         if (isCurrentPriceLow(currentPrice, todayLowestPrice, pricePrecision)) {
-          sendMail(currentPrice);
+          sendMail(currentPrice, 'lowest');
           console.log(`Today the lowest update: $${todayLowestPrice} -> $${currentPrice}`);
 
           insertPrice(currentPrice)
             .then(() => {})
             .catch(error => console.error('Error in insertPrice:', error));
         } else {
-          console.log(`\x1b[31m${todayLowestPrice ? `$${todayLowestPrice}` : '-'}\x1b[0m today the lowest price: `);
+          console.log(`\x1b[31m${todayLowestPrice ? `$${todayLowestPrice}` : '-'}\x1b[0m today the lowest price`);
         }
       }
 
@@ -71,33 +71,25 @@ async function startFetching() {
 }
 
 async function getJsonPrice(precision) {
-  try {
-    const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${process.env.COIN}USDT`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const json = await response.json();
-
-    return parseFloat(json.lastPrice).toFixed(precision);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    throw error; // Rethrow the error to be handled by the caller
-  }
+  const json = await getBinanceJson(`https://api.binance.com/api/v3/ticker/24hr?symbol=${process.env.COIN}USDT`);
+  return parseFloat(json.lastPrice).toFixed(precision);
 }
 
 async function getCoinPricePrecision() {
+  const json = await getBinanceJson(`https://api.binance.com/api/v3/exchangeInfo?symbol=${process.env.COIN}USDT`);
+  const tickSize =  json.symbols[0].filters[0].tickSize;
+  // tickSize example: "0.010000"
+  return (tickSize.indexOf('1') - tickSize.indexOf('.'));
+}
+
+async function getBinanceJson(url) {
   try {
-    const response = await fetch(`https://api.binance.com/api/v3/exchangeInfo?symbol=${process.env.COIN}USDT`);
+    const response = await fetch(url);
 
-    if (!response.ok) {
+    if (!response.ok)
       throw new Error(`HTTP error! status: ${response.status}`);
-    }
 
-    const json = await response.json();
-    const tickSize =  json.symbols[0].filters[0].tickSize;
-    return (tickSize.indexOf('1') - tickSize.indexOf('.'));
+    return await response.json();
   } catch (error) {
     console.error('Error fetching data:', error);
     throw error; // Rethrow the error to be handled by the caller
@@ -119,11 +111,10 @@ async function getHighestPriceToday() {
     `;
 
     db.get(query, (err, row) => {
-      if (err) {
+      if (err)
         reject(err);
-      } else {
+      else
         resolve(row ? row.highest_price : null);
-      }
     });
   });
 }
@@ -139,11 +130,10 @@ async function getLowestPriceToday() {
     `;
 
     db.get(query, (err, row) => {
-      if (err) {
+      if (err)
         reject(err);
-      } else {
+      else
         resolve(row ? row.lowest_price : null);
-      }
     });
   });
 }
@@ -192,16 +182,15 @@ async function insertPrice(price) {
           if (err) {
             console.error("Error inserting price:", err);
             db.run('ROLLBACK', () => reject(err));
-          } else {
+          } else
             db.run('COMMIT', () => resolve());
-          }
         }
       );
     });
   });
 }
 
-async function sendMail(price) {
+async function sendMail(price, priceStatus) {
   const emailProvider = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT,
@@ -212,7 +201,7 @@ async function sendMail(price) {
     },
   });
 
-  const messageText = `Today the highest ${process.env.COIN} price: $${price}`;
+  const messageText = `Today the ${priceStatus} ${process.env.COIN} price: $${price}`;
 
   const messageHtml = `
   <html>
@@ -249,8 +238,8 @@ async function sendMail(price) {
     </head>
     <body>
       <div class="container">
-        <h1>${process.env.COIN} = $${price}</h2>
-        <h2>Today the highest ${process.env.COIN} price was updated</h2>
+        <h1>${process.env.COIN} = <span style="color: ${priceStatus == 'highest' ? 'green' : 'red'}">$${price}</span></h2>
+        <h2>Today the <span style="color: ${priceStatus == 'highest' ? 'green' : 'red'}">${priceStatus}</span> ${process.env.COIN} price was updated</h2>
         <div class="footer">RoboRate</div>
       </div>
     </body>
@@ -260,15 +249,14 @@ async function sendMail(price) {
   const mailOptions = {
     from: `"RoboRate" <${process.env.SMTP_USER}>`,
     to: process.env.EMAIL_RECIPIENT,
-    subject: `${process.env.COIN} price update`,
+    subject: `${process.env.COIN} the ${priceStatus} price update`,
     text: messageText,
     html: messageHtml,
   };
 
   emailProvider.sendMail(mailOptions, (error, info) => {
-    if (error) {
+    if (error)
       return console.log(error);
-    }
 
     console.log('Email sent: ' + info.response);
   });
