@@ -1,20 +1,20 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-checkEnvKey('API_URL');
+checkEnvKey('COIN');
 checkEnvKey('SMTP_HOST');
 checkEnvKey('SMTP_PORT');
 checkEnvKey('SMTP_USER');
 checkEnvKey('SMTP_PASSWORD');
 checkEnvKey('EMAIL_RECIPIENT');
 
-if (process.env.API_URL && process.env.API_URL.length > 0) {
+if (process.env.COIN && process.env.COIN.length > 0) {
   testScrape();
 }
 
 async function testScrape() {
   try {
-    const response = await fetch(process.env.API_URL);
+    const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${process.env.COIN}USDT`);
 
     if (!response.ok) {
       return logError(`Request API URL status error: ${response.status}`);
@@ -48,10 +48,10 @@ async function testEmail(message) {
     },
   });
 
-  const text = `This is a test email sent from Node.js. Scrapped result: ${message}`
+  const text = `This is a test email sent from RoboRate. Scrapped result: ${message}`
 
   let mailOptions = {
-    from: `"Raspberry Pi" <${process.env.SMTP_USER}>`,
+    from: `"RoboRate" <${process.env.SMTP_USER}>`,
     to: process.env.EMAIL_RECIPIENT,
     subject: 'Test email',
     text,
