@@ -2,11 +2,25 @@ require('dotenv').config();
 const nodemailer = require('nodemailer');
 
 checkEnvKey('COIN');
+
+if (
+  process.env['PRICE_CHANGE_UP'] && process.env['PRICE_CHANGE_UP'].length > 0 ||
+  process.env['PRICE_CHANGE_DOWN'] && process.env['PRICE_CHANGE_DOWN'].length > 0
+) {
+  if (process.env['PRICE_CHANGE_UP'] && process.env['PRICE_CHANGE_UP'].length > 0)
+    logSuccess('PRICE_CHANGE_UP presents');
+
+  if (process.env['PRICE_CHANGE_DOWN'] && process.env['PRICE_CHANGE_DOWN'].length > 0)
+    logSuccess('PRICE_CHANGE_DOWN presents');
+} else
+  logError(`Neither PRICE_CHANGE_UP, nor PRICE_CHANGE_DOWN env variable in ".env". Need to set at least one of them.`);
+
+checkEnvKey('REQUEST_DELAY');
+checkEnvKey('EMAIL_RECIPIENT');
 checkEnvKey('SMTP_HOST');
 checkEnvKey('SMTP_PORT');
 checkEnvKey('SMTP_USER');
 checkEnvKey('SMTP_PASSWORD');
-checkEnvKey('EMAIL_RECIPIENT');
 
 if (process.env.COIN && process.env.COIN.length > 0) {
   testScrape();
