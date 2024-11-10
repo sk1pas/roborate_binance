@@ -1,4 +1,4 @@
-# RoboRate - Binance
+# RoboRate Binance
 
 **RoboRate** is a JavaScript-based scraper, containerized in Docker, designed to monitor cryptocurrency price changes on Binance. Set your desired threshold for price increase or decrease, and RoboRate will keep track of real-time price movements, alerting you via email when coins hit the highest or lowest prices of the day.
 
