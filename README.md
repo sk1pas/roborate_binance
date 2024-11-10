@@ -2,15 +2,15 @@
 
 **RoboRate** is a JavaScript-based scraper, containerized in Docker, designed to monitor cryptocurrency price changes on Binance. Set your desired threshold for price increase or decrease, and RoboRate will keep track of real-time price movements, alerting you via email when coins hit the highest or lowest prices of the day.
 
-## Requirements
-- Git [How to install](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- Docker [How to install](https://docs.docker.com/engine/install/)
-- (Optional) NodeJS [How to install](https://nodejs.org/en/learn/getting-started/how-to-install-nodejs)
-- ~200Mb disk space for Docker container
+## Requirements 
+- **Docker** [How to install](https://docs.docker.com/engine/install/)
+- (Optional) **Git** [How to install](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- (Optional) **NodeJS** [How to install](https://nodejs.org/en/learn/getting-started/how-to-install-nodejs)
+- **~200Mb** disk space for Docker container
 - Almost zero CPU and RAM
 
 ## Install
-1. Clone this repo:
+1. [Download the latest release](https://github.com/sk1pas/roborate_binance/releases/) and unpack the archive. Or clone this repo:
 ```bash
 git clone https://github.com/sk1pas/roborate_binance.git
 ```
