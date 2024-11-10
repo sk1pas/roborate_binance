@@ -7,20 +7,21 @@ if (
   process.env['PRICE_CHANGE_UP'] && process.env['PRICE_CHANGE_UP'].length > 0 ||
   process.env['PRICE_CHANGE_DOWN'] && process.env['PRICE_CHANGE_DOWN'].length > 0
 ) {
-  if (process.env['PRICE_CHANGE_UP'] && process.env['PRICE_CHANGE_UP'].length > 0)
-    logSuccess('PRICE_CHANGE_UP presents');
-
-  if (process.env['PRICE_CHANGE_DOWN'] && process.env['PRICE_CHANGE_DOWN'].length > 0)
-    logSuccess('PRICE_CHANGE_DOWN presents');
+  ['PRICE_CHANGE_UP', 'PRICE_CHANGE_DOWN'].forEach((key) => {
+    if (process.env[key] && process.env[key].length > 0)
+      logSuccess(`${key} presents`);
+  });
 } else
   logError(`Neither PRICE_CHANGE_UP, nor PRICE_CHANGE_DOWN env variable in ".env". Need to set at least one of them.`);
 
-checkEnvKey('REQUEST_DELAY');
-checkEnvKey('EMAIL_RECIPIENT');
-checkEnvKey('SMTP_HOST');
-checkEnvKey('SMTP_PORT');
-checkEnvKey('SMTP_USER');
-checkEnvKey('SMTP_PASSWORD');
+[
+  'REQUEST_DELAY',
+  'EMAIL_RECIPIENT',
+  'SMTP_HOST',
+  'SMTP_PORT',
+  'SMTP_USER',
+  'SMTP_PASSWORD'
+].forEach((key) => checkEnvKey(key));
 
 if (process.env.COIN && process.env.COIN.length > 0) {
   testScrape();
@@ -38,14 +39,15 @@ async function testScrape() {
     logSuccess(`API URL response: ${JSON.stringify(json)}`);
 
     if (
-      process.env.SMTP_HOST && process.env.SMTP_HOST.length > 0 &&
-      process.env.SMTP_PORT && process.env.SMTP_PORT.length > 0 &&
-      process.env.SMTP_USER && process.env.SMTP_USER.length > 0 &&
-      process.env.SMTP_PASSWORD && process.env.SMTP_PASSWORD.length > 0 &&
-      process.env.EMAIL_RECIPIENT && process.env.EMAIL_RECIPIENT.length > 0
-    ) {
+      [
+        'EMAIL_RECIPIENT',
+        'SMTP_HOST',
+        'SMTP_PORT',
+        'SMTP_USER',
+        'SMTP_PASSWORD'
+      ].every((key) => (process.env[key] && process.env[key].length > 0))
+    )
       testEmail(json.lastPrice);
-    }
   } catch (error) {
     return logError(`Request API URL error: ${error}`);
   }
